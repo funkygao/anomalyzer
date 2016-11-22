@@ -11,6 +11,10 @@ const (
 	NA = math.SmallestNonzeroFloat64
 )
 
+var (
+	Debug = false
+)
+
 type AnomalyzerConf struct {
 	Delay         bool
 	Sensitivity   float64
@@ -148,10 +152,16 @@ func (a Anomalyzer) Eval() float64 {
 		return 0.0
 	}
 	probmap := make(map[string]float64)
+	if Debug {
+		fmt.Printf("data: %+v\n", a.Data)
+	}
 	for _, method := range a.Conf.Methods {
 
 		algorithm := Algorithms[method]
 		prob := cap(algorithm(a.Data, *a.Conf), 0, 1)
+		if Debug {
+			fmt.Printf("%20s %f\n", method, algorithm(a.Data, *a.Conf))
+		}
 		if prob != NA {
 			// if highrank and lowrank methods exist then only listen to
 			// the max of either
@@ -175,6 +185,10 @@ func (a Anomalyzer) Eval() float64 {
 		}
 		probs = append(probs, prob)
 		weights = append(weights, a.getWeight(method, prob))
+	}
+
+	if Debug {
+		fmt.Printf("weights: %+v\n", weights)
 	}
 
 	// ignore the error since we force the length of probs
