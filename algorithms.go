@@ -321,3 +321,20 @@ func interpolate(min, max float64, npoints int) govector.Vector {
 	}
 	return interp
 }
+
+// A timeseries is anomalous if the Z score is greater than the Grubb's score.
+func Sigma3Test(vector govector.Vector, conf AnomalyzerConf) float64 {
+	reference, active, err := extractWindows(vector, conf.referenceSize, conf.ActiveSize, conf.ActiveSize)
+	if err != nil {
+		return NA
+	}
+
+	mean := active.Mean()
+	std := active.Sd()
+	reference.Mean()
+	if math.Abs(reference.Mean()-mean) > 3*std {
+		return 1.
+	} else {
+		return 0.
+	}
+}
